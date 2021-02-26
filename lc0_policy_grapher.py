@@ -5,6 +5,8 @@ ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
 DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
 DEFAULT_MOVE = "a8f3"
 
+STEP = 100
+
 import os, subprocess, sys
 import requests
 from matplotlib import pyplot as plt
@@ -145,7 +147,7 @@ def main():
 
 	print()
 
-	for net in range(lowest, highest + 1, 1):
+	for net in range(lowest, highest + 1, STEP):
 		try:
 			policy = test_position(fen, move, net)
 			nets.append(net)
