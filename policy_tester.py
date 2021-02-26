@@ -2,11 +2,18 @@
 
 ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
 
+DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
+DEFAULT_MOVE = "a8f3"
+
 import os, subprocess, sys
 import requests
 from matplotlib import pyplot as plt
 
 lczero_nets = [None, dict(), dict(), dict()]		# for runs 1, 2, 3
+
+
+class NetNotKnown(Exception):
+	pass
 
 
 class Engine:
@@ -74,7 +81,11 @@ def dl_net(net):
 	if len(lczero_nets[run]) == 0:
 		dl_inventory(run)
 
-	sha = lczero_nets[run][net]
+	try:
+		sha = lczero_nets[run][net]
+	except:
+		raise NetNotKnown
+
 	print(f"(downloading {sha[:8]})", end=" ", flush=True)
 	open(f"networks/{net}.pb.gz", "wb").write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
@@ -115,8 +126,14 @@ def main():
 
 	lowest = int(input("Lowest net?  "))
 	highest = int(input("Highest net?  "))
-	fen = input("FEN?  ")
-	move = input("Move? (UCI format)  ")
+	fen = input("FEN? (leave blank for default) ")
+	if fen.strip() == "":
+		fen = DEFAULT_FEN
+		print(f"Using {fen}")
+	move = input("Move? (UCI format, leave blank for default)  ")
+	if move.strip() == "":
+		move = DEFAULT_MOVE
+		print(f"Using {move}")
 
 	nets = []
 	policies = []
@@ -133,7 +150,8 @@ def main():
 			policy = test_position(fen, move, net)
 			nets.append(net)
 			policies.append(policy)
-		except IndexError:
+		except NetNotKnown:
+			print(f"(net {net} not known)")
 			pass
 
 	plt.plot(nets, policies)
