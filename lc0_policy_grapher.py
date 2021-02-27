@@ -5,8 +5,7 @@ NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0_Networks"
 
 DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
 DEFAULT_MOVE = "a8f3"
-
-STEP = 100
+DEFAULT_STEP = 100
 
 import os, subprocess, sys
 import requests
@@ -123,6 +122,31 @@ def dl_net(net):
 		outfile.write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
 
+def interrogate_user():
+
+	lowest = int(input("Lowest net?  "))
+
+	highest = int(input("Highest net?  "))
+
+	try:
+		step = int(input("Step? (leave blank for default)  "))
+	except:
+		step = DEFAULT_STEP
+		print(f"  Using {step}")
+
+	fen = input("FEN? (leave blank for default)  ")
+	if fen.strip() == "":
+		fen = DEFAULT_FEN
+		print(f"  Using {fen}")
+
+	move = input("Move? (UCI format, leave blank for default)  ")
+	if move.strip() == "":
+		move = DEFAULT_MOVE
+		print(f"  Using {move}")
+
+	return lowest, highest, step, fen, move
+
+
 def main():
 
 	try:
@@ -132,16 +156,7 @@ def main():
 
 	print()
 
-	lowest = int(input("Lowest net?  "))
-	highest = int(input("Highest net?  "))
-	fen = input("FEN? (leave blank for default) ")
-	if fen.strip() == "":
-		fen = DEFAULT_FEN
-		print(f"Using {fen}")
-	move = input("Move? (UCI format, leave blank for default)  ")
-	if move.strip() == "":
-		move = DEFAULT_MOVE
-		print(f"Using {move}")
+	lowest, highest, step, fen, move = interrogate_user()
 
 	nets = []
 	policies = []
@@ -155,7 +170,7 @@ def main():
 
 	engine = Engine(ENGINE)
 
-	for net in range(lowest, highest + 1, STEP):
+	for net in range(lowest, highest + 1, step):
 		try:
 			policy = engine.test(fen, move, net)
 			nets.append(net)
@@ -171,4 +186,5 @@ def main():
 	plt.show()
 
 
-main()
+if __name__ == "__main__":
+	main()
