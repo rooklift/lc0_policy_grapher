@@ -1,6 +1,7 @@
 # Originally by an anonymous Discorder
 
 ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
+NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0_Networks"
 
 DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
 DEFAULT_MOVE = "a8f3"
@@ -48,10 +49,10 @@ class Engine:
 	def test(self, fen, move, net):
 
 		print(net, end=" ", flush=True)
-		if not os.path.exists(f"networks/{net}.pb.gz"):
+		if not os.path.exists(f"{NETWORKS}/{net}.pb.gz"):
 			dl_net(net)
 
-		self.setoption("WeightsFile", f"./networks/{net}.pb.gz")
+		self.setoption("WeightsFile", f"{NETWORKS}/{net}.pb.gz")
 		self.send("ucinewgame")
 		self.send(f"position fen {fen}")
 		self.send("isready")
@@ -117,13 +118,13 @@ def dl_net(net):
 		raise NetNotKnown
 
 	print(f"(downloading {sha[:8]})", end=" ", flush=True)
-	open(f"networks/{net}.pb.gz", "wb").write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
+	open(f"{NETWORKS}/{net}.pb.gz", "wb").write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
 
 def main():
 
 	try:
-		os.mkdir("networks")
+		os.mkdir(NETWORKS)
 	except FileExistsError:
 		pass
 
