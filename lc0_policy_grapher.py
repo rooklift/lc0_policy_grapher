@@ -157,6 +157,7 @@ def main():
 			pass
 
 	plt.plot(nets, policies)
+	plt.title(f"Policy of {move} for {fen}")
 	plt.show()
 
 
