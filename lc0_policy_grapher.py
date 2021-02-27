@@ -178,7 +178,6 @@ def main():
 			policies.append(policy)
 		except NetNotKnown:
 			print(f"(net {net} not known)")
-			pass
 
 	engine.quit()
 
