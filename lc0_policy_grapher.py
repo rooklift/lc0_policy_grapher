@@ -162,13 +162,11 @@ def graph(nets, policies, values, title):
 
 	fig, ax = plt.subplots()
 	ax.plot(nets, policies, color = "red", marker = "o")
-	ax.set_ylim(ymin = 0, ymax = 100)
 	ax.set_xlabel("network", fontsize = 14)
 	ax.set_ylabel("policy", color = "red", fontsize = 14)
 
 	ax2 = ax.twinx()
 	ax2.plot(nets, values, color = "blue", marker = "o")
-	ax2.set_ylim(ymin = 0, ymax = 100)
 	ax2.set_ylabel("value", color = "blue", fontsize = 14)
 
 	plt.title(title)
