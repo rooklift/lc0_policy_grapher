@@ -13,8 +13,6 @@ from matplotlib import pyplot as plt
 
 lczero_nets = [None, dict(), dict(), dict()]		# for runs 1, 2, 3
 
-engine = None
-
 
 class NetNotKnown(Exception):
 	pass
@@ -24,6 +22,12 @@ class Engine:
 
 	def __init__(self, engine_location):
 		self.process = subprocess.Popen(engine_location, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.DEVNULL)
+
+	def quit(self):
+		self.process.terminate()
+
+	def readline(self):
+		return self.process.stdout.readline().decode("utf8").strip()
 
 	def send(self, s):
 		s = s.strip() + "\n"
@@ -37,11 +41,29 @@ class Engine:
 			value = "false"
 		self.send(f"setoption name {name} value {value}")
 
-	def readline(self):
-		return self.process.stdout.readline().decode("utf8").strip()
+	def test(self, fen, move, net):
 
-	def quit(self):
-		self.process.terminate()
+		print(net, end=" ", flush=True)
+		if not os.path.exists(f"networks/{net}.pb.gz"):
+			dl_net(net)
+
+		self.setoption("WeightsFile", f"./networks/{net}.pb.gz")
+		self.send("ucinewgame")
+		self.send(f"position fen {fen}")
+		self.send("isready")
+		while "readyok" not in (self.readline()):
+			pass
+		self.send("go nodes 1")
+
+		policy = None
+		while True:
+			line = self.readline()
+			if "info string " + move in line:
+				policy = float(line.split("P: ", 1)[1].split("%")[0].strip())
+				print(policy)
+				break
+
+		return policy
 
 
 def infer_run(net):
@@ -94,40 +116,7 @@ def dl_net(net):
 	open(f"networks/{net}.pb.gz", "wb").write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
 
-def test_position(fen, move, net):
-
-	global engine
-
-	print(net, end=" ", flush=True)
-	if not os.path.exists(f"networks/{net}.pb.gz"):
-		dl_net(net)
-
-	if not engine:
-		engine = Engine(ENGINE)
-		engine.send("uci")
-		engine.setoption("VerboseMoveStats", True)
-
-	engine.setoption("WeightsFile", f"./networks/{net}.pb.gz")
-	engine.send("ucinewgame")
-	engine.send(f"position fen {fen}")
-	engine.send("isready")
-	while "readyok" not in (engine.readline()):
-		pass
-	engine.send("go nodes 1")
-
-	policy = None
-	while True:
-		line = engine.readline()
-		if "info string " + move in line:
-			policy = float(line.split("P: ", 1)[1].split("%")[0].strip())
-			print(policy)
-			break
-	return policy
-
-
 def main():
-
-	global engine
 
 	try:
 		os.mkdir("networks")
@@ -157,17 +146,20 @@ def main():
 
 	print()
 
+	engine = Engine(ENGINE)
+	engine.send("uci")
+	engine.setoption("VerboseMoveStats", True)
+
 	for net in range(lowest, highest + 1, STEP):
 		try:
-			policy = test_position(fen, move, net)
+			policy = engine.test(fen, move, net)
 			nets.append(net)
 			policies.append(policy)
 		except NetNotKnown:
 			print(f"(net {net} not known)")
 			pass
 
-	if engine:
-		engine.quit()
+	engine.quit()
 
 	plt.plot(nets, policies, marker="o")
 	plt.title(f"Policy of  {move}  for  {fen}")
