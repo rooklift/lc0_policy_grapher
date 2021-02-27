@@ -68,7 +68,7 @@ class Engine:
 				policy = float(line.split("(P:")[1].split("%")[0])
 			if "info string node" in line:
 				value = float(line.split("(V:")[1].split(")")[0])
-			if policy != None and value != None:
+			if "bestmove" in line:
 				break
 
 		print(f"P = {policy} V = {value}")
