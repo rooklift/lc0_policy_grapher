@@ -22,6 +22,10 @@ class Engine:
 
 	def __init__(self, engine_location):
 		self.process = subprocess.Popen(engine_location, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.DEVNULL)
+		self.send("uci")
+		while "uciok" not in self.readline():
+			pass
+		engine.setoption("VerboseMoveStats", True)
 
 	def quit(self):
 		self.process.terminate()
@@ -51,7 +55,7 @@ class Engine:
 		self.send("ucinewgame")
 		self.send(f"position fen {fen}")
 		self.send("isready")
-		while "readyok" not in (self.readline()):
+		while "readyok" not in self.readline():
 			pass
 		self.send("go nodes 1")
 
@@ -147,8 +151,6 @@ def main():
 	print()
 
 	engine = Engine(ENGINE)
-	engine.send("uci")
-	engine.setoption("VerboseMoveStats", True)
 
 	for net in range(lowest, highest + 1, STEP):
 		try:
