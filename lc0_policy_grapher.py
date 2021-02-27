@@ -13,6 +13,8 @@ from matplotlib import pyplot as plt
 
 lczero_nets = [None, dict(), dict(), dict()]		# for runs 1, 2, 3
 
+engine = None
+
 
 class NetNotKnown(Exception):
 	pass
@@ -93,28 +95,33 @@ def dl_net(net):
 
 
 def test_position(fen, move, net):
+
+	global engine
+
 	print(net, end=" ", flush=True)
 	if not os.path.exists(f"networks/{net}.pb.gz"):
 		dl_net(net)
-	eng = Engine(ENGINE)
-	eng.send("uci")
-	while "uciok" not in (eng.readline()):
+
+	if not engine:
+		engine = Engine(ENGINE)
+		engine.send("uci")
+		engine.setoption("VerboseMoveStats", True)
+
+	engine.setoption("WeightsFile", f"./networks/{net}.pb.gz")
+	engine.send("ucinewgame")
+	engine.send(f"position fen {fen}")
+	engine.send("isready")
+	while "readyok" not in (engine.readline()):
 		pass
-	eng.setoption("WeightsFile", f"./networks/{net}.pb.gz")
-	eng.setoption("VerboseMoveStats", True)
-	eng.send(f"position fen {fen}")
-	eng.send("isready")
-	while "readyok" not in (eng.readline()):
-		pass
-	eng.send("go nodes 1")
+	engine.send("go nodes 1")
+
 	policy = None
 	while True:
-		line = eng.readline()
+		line = engine.readline()
 		if "info string " + move in line:
 			policy = float(line.split("P: ", 1)[1].split("%")[0].strip())
 			print(policy)
 			break
-	eng.quit()
 	return policy
 
 
