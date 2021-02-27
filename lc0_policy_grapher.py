@@ -72,16 +72,16 @@ class Engine:
 
 def infer_run(net):
 
-	if net > 60000 and net < 70000:
+	if net >= 60000 and net < 70000:
 		return 1
 
-	if net > 700000 and net < 710000:
+	if net >= 700000 and net < 710000:
 		return 2
 
-	if net > 710000 and net < 720000:
+	if net >= 710000 and net < 720000:
 		return 3
 
-	if net > 720000 and net < 750000:
+	if net >= 720000 and net < 750000:
 		return 2
 
 	print(f"Could not infer the run for net {net}, edit infer_run() function to fix.")
