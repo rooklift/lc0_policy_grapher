@@ -126,6 +126,9 @@ def test_position(fen, move, net):
 
 
 def main():
+
+	global engine
+
 	try:
 		os.mkdir("networks")
 	except FileExistsError:
@@ -163,7 +166,6 @@ def main():
 			print(f"(net {net} not known)")
 			pass
 
-	global engine
 	if engine:
 		engine.quit()
 
