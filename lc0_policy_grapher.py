@@ -162,7 +162,7 @@ def graph(nets, policies, values, title):
 
 	fig, ax = plt.subplots()
 	ax.plot(nets, policies, color = "red", marker = "o")
-	ax.set_xlabel("year", fontsize = 14)
+	ax.set_xlabel("network", fontsize = 14)
 	ax.set_ylabel("policy", color = "red", fontsize = 14)
 
 	ax2 = ax.twinx()
