@@ -60,14 +60,19 @@ class Engine:
 		self.send("go nodes 1")
 
 		policy = None
+		value = None
+
 		while True:
 			line = self.readline()
-			if "info string " + move in line:
-				policy = float(line.split("P: ", 1)[1].split("%")[0].strip())
-				print(policy)
+			if f"info string {move}" in line:
+				policy = float(line.split("(P:")[1].split("%")[0])
+			if "info string node" in line:
+				value = float(line.split("(V:")[1].split(")")[0])
+			if policy != None and value != None:
 				break
 
-		return policy
+		print(f"P = {policy} V = {value}")
+		return policy, value
 
 
 def infer_run(net):
@@ -153,6 +158,21 @@ def interrogate_user():
 	return lowest, highest, step, fen, move
 
 
+def graph(nets, policies, values, title):
+
+	fig, ax = plt.subplots()
+	ax.plot(nets, policies, color = "red", marker = "o")
+	ax.set_xlabel("year", fontsize = 14)
+	ax.set_ylabel("policy", color = "red", fontsize = 14)
+
+	ax2 = ax.twinx()
+	ax2.plot(nets, values, color = "blue", marker = "o")
+	ax2.set_ylabel("value", color = "blue", fontsize = 14)
+
+	plt.title(title)
+	plt.show()
+
+
 def main():
 
 	try:
@@ -166,6 +186,7 @@ def main():
 
 	nets = []
 	policies = []
+	values = []
 
 	print()
 
@@ -173,17 +194,15 @@ def main():
 
 	for net in range(lowest, highest + 1, step):
 		try:
-			policy = engine.test(fen, move, net)
+			policy, value = engine.test(fen, move, net)
 			nets.append(net)
 			policies.append(policy)
+			values.append(value * 100)
 		except NetNotKnown:
 			print(f"(net {net} not known)")
 
 	engine.quit()
-
-	plt.plot(nets, policies, marker="o")
-	plt.title(f"Policy of  {move}  for  {fen}")
-	plt.show()
+	graph(nets, policies, values, f"P({move}) and V for:  {fen}")
 
 
 if __name__ == "__main__":
