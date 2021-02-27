@@ -134,6 +134,11 @@ def interrogate_user():
 		step = DEFAULT_STEP
 		print(f"  Using {step}")
 
+	# Just to check we can infer every net's run, test:
+
+	for net in range(lowest, highest + 1, step):
+		infer_run(net)		# Will warn the user if not.
+
 	fen = input("FEN? (leave blank for default)  ")
 	if fen.strip() == "":
 		fen = DEFAULT_FEN
@@ -160,11 +165,6 @@ def main():
 
 	nets = []
 	policies = []
-
-	# Just to check we can infer every net's run, test:
-
-	for net in range(lowest, highest + 1, 1):
-		infer_run(net)		# Will warn the user if not.
 
 	print()
 
