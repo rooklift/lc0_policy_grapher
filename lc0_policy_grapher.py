@@ -84,8 +84,7 @@ def infer_run(net):
 	if net >= 720000 and net < 750000:
 		return 2
 
-	print(f"Could not infer the run for net {net}, edit infer_run() function to fix.")
-	sys.exit()
+	return None
 
 
 def dl_inventory(run):
@@ -137,7 +136,9 @@ def interrogate_user():
 	# Just to check we can infer every net's run, test:
 
 	for net in range(lowest, highest + 1, step):
-		infer_run(net)		# Will warn the user if not.
+		if infer_run(net) == None:
+			print(f"Could not infer the run for net {net}, edit infer_run() function to fix.")
+			sys.exit()
 
 	fen = input("FEN? (leave blank for default)  ")
 	if fen.strip() == "":
