@@ -49,10 +49,10 @@ class Engine:
 	def test(self, fen, move, net):
 
 		print(net, end=" ", flush=True)
-		if not os.path.exists(f"{NETWORKS}/{net}.pb.gz"):
+		if not os.path.exists(os.path.join(NETWORKS, f"{net}.pb.gz")):
 			dl_net(net)
 
-		self.setoption("WeightsFile", f"{NETWORKS}/{net}.pb.gz")
+		self.setoption("WeightsFile", os.path.join(NETWORKS, f"{net}.pb.gz"))
 		self.send("ucinewgame")
 		self.send(f"position fen {fen}")
 		self.send("isready")
@@ -118,7 +118,9 @@ def dl_net(net):
 		raise NetNotKnown
 
 	print(f"(downloading {sha[:8]})", end=" ", flush=True)
-	open(f"{NETWORKS}/{net}.pb.gz", "wb").write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
+
+	with open(os.path.join(NETWORKS, f"{net}.pb.gz"), "wb") as outfile:
+		outfile.write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
 
 def main():
