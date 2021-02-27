@@ -25,7 +25,7 @@ class Engine:
 		self.send("uci")
 		while "uciok" not in self.readline():
 			pass
-		engine.setoption("VerboseMoveStats", True)
+		self.setoption("VerboseMoveStats", True)
 
 	def quit(self):
 		self.process.terminate()
