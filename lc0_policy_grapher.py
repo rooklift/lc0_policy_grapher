@@ -97,7 +97,7 @@ def dl_inventory(run):
 	for line in lines:
 		if '<td><a href="/get_network?sha=' in line:
 			sha = line.split("sha=")[1].split('"')[0]
-			net = line.split(f"weights_run{run}_")[1].split(".pb.gz")[0]
+			net = line.split(".pb.gz")[0].split("_")[-1]
 			lczero_nets[run][int(net)] = sha
 
 
