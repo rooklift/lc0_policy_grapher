@@ -92,7 +92,7 @@ def dl_inventory(run):
 
 	global lczero_nets
 
-	webtext = requests.get(f"https://training.lczero.org/networks/{run}").text
+	webtext = requests.get(f"https://training.lczero.org/networks/{run}?show_all=1").text
 	lines = webtext.split("\n")
 
 	for line in lines:
