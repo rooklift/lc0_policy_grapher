@@ -163,6 +163,10 @@ def main():
 			print(f"(net {net} not known)")
 			pass
 
+	global engine
+	if engine:
+		engine.quit()
+
 	plt.plot(nets, policies)
 	plt.title(f"Policy of {move} for {fen}")
 	plt.show()
