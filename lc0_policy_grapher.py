@@ -169,8 +169,8 @@ def main():
 	if engine:
 		engine.quit()
 
-	plt.plot(nets, policies)
-	plt.title(f"Policy of {move} for {fen}")
+	plt.plot(nets, policies, marker="o")
+	plt.title(f"Policy of  {move}  for  {fen}")
 	plt.show()
 
 
