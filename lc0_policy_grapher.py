@@ -14,10 +14,6 @@ from matplotlib import pyplot as plt
 lczero_nets = [None, dict(), dict(), dict()]		# for runs 1, 2, 3
 
 
-class NetNotKnown(Exception):
-	pass
-
-
 class Engine:
 
 	def __init__(self, engine_location):
@@ -47,9 +43,6 @@ class Engine:
 
 	def test(self, fen, move, net):
 
-		if not os.path.exists(os.path.join(NETWORKS, f"{net}.pb.gz")):
-			dl_net(net)
-
 		self.setoption("WeightsFile", os.path.join(NETWORKS, f"{net}.pb.gz"))
 		self.send("ucinewgame")
 		self.send(f"position fen {fen}")
@@ -75,15 +68,12 @@ class Engine:
 
 def infer_run(net):
 
-	if net >= 60000 and net < 70000:
+	if net >=  60000 and net <  70000:
 		return 1
-
 	if net >= 700000 and net < 710000:
 		return 2
-
 	if net >= 710000 and net < 720000:
 		return 3
-
 	if net >= 720000 and net < 750000:
 		return 2
 
@@ -104,7 +94,7 @@ def dl_inventory(run):
 			lczero_nets[run][int(net)] = sha
 
 
-def dl_net(net):
+def get_sha(net):
 
 	global lczero_nets
 
@@ -114,11 +104,12 @@ def dl_net(net):
 		dl_inventory(run)
 
 	try:
-		sha = lczero_nets[run][net]
+		return lczero_nets[run][net]
 	except:
-		raise NetNotKnown
+		return None
 
-	print(f"(downloading {sha[:8]})", end=" ", flush=True)
+
+def dl_net(net, sha):
 
 	with open(os.path.join(NETWORKS, f"{net}.pb.gz"), "wb") as outfile:
 		outfile.write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
@@ -191,15 +182,25 @@ def main():
 	engine = Engine(ENGINE)
 
 	for net in range(lowest, highest + 1, step):
+
 		print(net, end=" ", flush=True)
-		try:
-			policy, value = engine.test(fen, move, net)
-			print(f"P = {policy} V = {value}")
-			nets.append(net)
-			policies.append(policy)
-			values.append(value)
-		except NetNotKnown:
-			print(f"(net {net} not known)")
+
+		if not os.path.exists(os.path.join(NETWORKS, f"{net}.pb.gz")):
+			sha = get_sha(net)
+			if sha:
+				print(f"(downloading {sha[:8]})", end=" ", flush=True)
+				dl_net(net, sha)
+			else:
+				print(f"(net {net} not known, ending run)")
+				break
+
+		policy, value = engine.test(fen, move, net)
+
+		nets.append(net)
+		policies.append(policy)
+		values.append(value)
+
+		print(f"P = {policy} V = {value}")
 
 	engine.quit()
 	graph(nets, policies, values, f"P({move}) and V for:  {fen}")
