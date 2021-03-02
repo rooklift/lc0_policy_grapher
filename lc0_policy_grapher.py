@@ -1,7 +1,7 @@
 # Originally by an anonymous Discorder
 
 ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
-NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0_Networks"
+NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0 Networks"
 
 DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
 DEFAULT_MOVE = "a8f3"
@@ -47,7 +47,6 @@ class Engine:
 
 	def test(self, fen, move, net):
 
-		print(net, end=" ", flush=True)
 		if not os.path.exists(os.path.join(NETWORKS, f"{net}.pb.gz")):
 			dl_net(net)
 
@@ -71,7 +70,6 @@ class Engine:
 			if "bestmove" in line:
 				break
 
-		print(f"P = {policy} V = {value}")
 		return policy, value
 
 
@@ -193,8 +191,10 @@ def main():
 	engine = Engine(ENGINE)
 
 	for net in range(lowest, highest + 1, step):
+		print(net, end=" ", flush=True)
 		try:
 			policy, value = engine.test(fen, move, net)
+			print(f"P = {policy} V = {value}")
 			nets.append(net)
 			policies.append(policy)
 			values.append(value)
