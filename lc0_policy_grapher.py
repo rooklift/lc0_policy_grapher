@@ -99,6 +99,8 @@ def get_sha(net):
 	global lczero_nets
 
 	run = infer_run(net)
+	if run == None:
+		return None
 
 	if len(lczero_nets[run]) == 0:
 		dl_inventory(run)
