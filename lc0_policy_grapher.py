@@ -141,7 +141,7 @@ def interrogate_user():
 		fen = DEFAULT_FEN
 		print(f"  Using {fen}")
 
-	move = input("Move? (UCI format, leave blank for default)  ")
+	move = input("Move? (UCI format, leave blank for default)  ").lower()
 	if move.strip() == "":
 		move = DEFAULT_MOVE
 		print(f"  Using {move}")
