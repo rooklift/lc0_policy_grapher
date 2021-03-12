@@ -3,6 +3,8 @@
 ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
 NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0 Networks"
 
+KNOWN_STATS = ["D", "P", "Q", "V"]
+
 import os, subprocess, sys
 import requests
 from matplotlib import pyplot as plt
@@ -123,7 +125,6 @@ def dl_net(net, sha):
 def parse_flags():
 
 	flags = ["fen", "modulo", "start_net_id", "move", "nodes"]
-	stats = ["D", "P", "Q", "V"]
 
 	flags_ret = dict()
 	stats_ret = dict()
@@ -137,7 +138,7 @@ def parse_flags():
 				except IndexError:
 					pass
 
-	for stat in stats:
+	for stat in KNOWN_STATS:
 		for arg in sys.argv:
 			if arg.upper() == stat or arg.upper() == "-" + stat or arg.upper() == "--" + stat:
 				stats_ret[stat] = True
@@ -179,7 +180,7 @@ def main():
 	desired_stats = list(stats_dict)		# Gets keys
 
 	if len(desired_stats) < 1 or len(desired_stats) > 2:
-		print("Must specify 1 or 2 stats to track: -D -P -Q -V")
+		print("Must specify 1 or 2 stats to track")
 		sys.exit()
 
 	try:
