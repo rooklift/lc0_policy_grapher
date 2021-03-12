@@ -3,10 +3,6 @@
 ENGINE = "C:\\Programs (self-installed)\\lc0-cuda\\lc0.exe"
 NETWORKS = "C:\\Users\\Owner\\Documents\\Misc\\Chess\\Lc0 Networks"
 
-DEFAULT_FEN = "Q7/Q7/8/6pk/5n2/8/1q6/7K w - - 0 1"
-DEFAULT_MOVE = "a8f3"
-DEFAULT_STEP = 100
-
 import os, subprocess, sys
 import requests
 from matplotlib import pyplot as plt
@@ -117,36 +113,22 @@ def dl_net(net, sha):
 		outfile.write(requests.get(f"https://training.lczero.org/get_network?sha={sha}").content)
 
 
-def interrogate_user():
+def parse_flags():
 
-	lowest = int(input("Lowest net?  "))
+	flags = ["fen", "modulo", "start_net_id", "move"]
 
-	highest = int(input("Highest net?  "))
+	ret = dict()
 
-	try:
-		step = int(input("Step? (leave blank for default)  "))
-	except:
-		step = DEFAULT_STEP
-		print(f"  Using {step}")
+	for flag in flags:
+		for i, arg in enumerate(sys.argv):
+			if arg == flag or arg == "-" + flag or arg == "--" + flag:
+				try:
+					val = sys.argv[i + 1]
+					ret[flag] = val
+				except IndexError:
+					pass
 
-	# Just to check we can infer every net's run, test:
-
-	for net in range(lowest, highest + 1, step):
-		if infer_run(net) == None:
-			print(f"Could not infer the run for net {net}, edit infer_run() function to fix.")
-			sys.exit()
-
-	fen = input("FEN? (leave blank for default)  ")
-	if fen.strip() == "":
-		fen = DEFAULT_FEN
-		print(f"  Using {fen}")
-
-	move = input("Move? (UCI format, leave blank for default)  ").lower()
-	if move.strip() == "":
-		move = DEFAULT_MOVE
-		print(f"  Using {move}")
-
-	return lowest, highest, step, fen, move
+	return ret
 
 
 def graph(nets, policies, values, title):
@@ -171,19 +153,26 @@ def main():
 	except FileExistsError:
 		pass
 
-	print()
+	flagdict = parse_flags()
 
-	lowest, highest, step, fen, move = interrogate_user()
+	try:
+		net = int(flagdict["start_net_id"])
+		modulo = int(flagdict["modulo"])
+		move = flagdict["move"]
+		fen = flagdict["fen"]
+	except KeyError:
+		print("Required args: start_net_id , modulo , move , fen")
+		sys.exit()
+
+	print()
 
 	nets = []
 	policies = []
 	values = []
 
-	print()
-
 	engine = Engine(ENGINE)
 
-	for net in range(lowest, highest + 1, step):
+	while 1:
 
 		print(net, end=" ", flush=True)
 
@@ -203,6 +192,8 @@ def main():
 		values.append(value)
 
 		print(f"P = {policy} V = {value}")
+
+		net += modulo
 
 	engine.quit()
 	graph(nets, policies, values, f"P({move}) and V for:  {fen}")
