@@ -123,7 +123,7 @@ def dl_net(net, sha):
 def parse_flags():
 
 	flags = ["fen", "modulo", "start_net_id", "move", "nodes"]
-	stats = ["P", "Q", "V"]
+	stats = ["D", "P", "Q", "V"]
 
 	flags_ret = dict()
 	stats_ret = dict()
@@ -179,7 +179,7 @@ def main():
 	desired_stats = list(stats_dict)		# Gets keys
 
 	if len(desired_stats) < 1 or len(desired_stats) > 2:
-		print("Must specify 1 or 2 stats to track: -P -Q -V")
+		print("Must specify 1 or 2 stats to track: -D -P -Q -V")
 		sys.exit()
 
 	try:
