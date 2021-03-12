@@ -23,7 +23,9 @@ class Engine:
 		self.process.terminate()
 
 	def readline(self):
-		return self.process.stdout.readline().decode("utf8").strip()
+		ret = self.process.stdout.readline().decode("utf8").strip()
+		# print(ret)
+		return ret
 
 	def send(self, s):
 		s = s.strip() + "\n"
