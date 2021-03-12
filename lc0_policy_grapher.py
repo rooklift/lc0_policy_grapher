@@ -150,19 +150,19 @@ def graph(nets, stats, fen, move):
 
 	fig, ax = plt.subplots()
 
-	desired_stats = sorted(list(stats[0]))		# Gets keys
+	keys = sorted(list(stats[0]))
 
-	values = [foo[desired_stats[0]] for foo in stats]
+	values = [item[keys[0]] for item in stats]
 
 	ax.plot(nets, values, color = "red", marker = "o")
 	ax.set_xlabel("network", fontsize = 14)
-	ax.set_ylabel(f"{desired_stats[0]} ({move})", color = "red", fontsize = 14)
+	ax.set_ylabel(f"{keys[0]} ({move})", color = "red", fontsize = 14)
 
-	if len(desired_stats) > 1:
-		values = [foo[desired_stats[1]] for foo in stats]
+	if len(keys) > 1:
+		values = [item[keys[1]] for item in stats]
 		ax2 = ax.twinx()
 		ax2.plot(nets, values, color = "blue", marker = "o")
-		ax2.set_ylabel(f"{desired_stats[1]} ({move})", color = "blue", fontsize = 14)
+		ax2.set_ylabel(f"{keys[1]} ({move})", color = "blue", fontsize = 14)
 
 	plt.title(fen)
 	plt.show()
