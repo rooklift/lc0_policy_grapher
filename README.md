@@ -3,5 +3,5 @@
 Example usage:
 
 ```
-.\lc0_policy_grapher.py --start_net_id 740900 --move e2e4 --modulo 50 --fen "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+.\lc0_policy_grapher.py -start_net_id 67995 -move h3g2 -modulo 1 -P -Q -nodes 1000 -fen "NQ6/5pkp/3p2rb/4p3/2Nnq3/6PQ/5P1P/5RK1 w - - 1 33"
 ```
