@@ -37,7 +37,7 @@ class Engine:
 			value = "false"
 		self.send(f"setoption name {name} value {value}")
 
-	def test(self, fen, move, net):
+	def test(self, fen, move, net, nodes, desired_stats):
 
 		self.setoption("WeightsFile", os.path.join(NETWORKS, f"{net}.pb.gz"))
 		self.send("ucinewgame")
@@ -45,21 +45,26 @@ class Engine:
 		self.send("isready")
 		while "readyok" not in self.readline():
 			pass
-		self.send("go nodes 1")
+		self.send(f"go nodes {nodes}")
 
-		policy = None
-		value = None
+		stats = dict()
+
+		for stat in desired_stats:
+			stats[stat] = None
 
 		while True:
 			line = self.readline()
 			if f"info string {move}" in line:
-				policy = float(line.split("(P:")[1].split("%")[0])
-			if "info string node" in line:
-				value = float(line.split("(V:")[1].split(")")[0])
+				for stat in desired_stats:
+					raw = line.split(f"({stat}:")[1].split(")")[0]
+					if raw[-1] == "%":
+						raw = raw[:-1]
+					stats[stat] = float(raw)
+				print(stats)
 			if "bestmove" in line:
 				break
 
-		return policy, value
+		return stats
 
 
 def infer_run(net):
@@ -115,34 +120,48 @@ def dl_net(net, sha):
 
 def parse_flags():
 
-	flags = ["fen", "modulo", "start_net_id", "move"]
+	flags = ["fen", "modulo", "start_net_id", "move", "nodes"]
+	stats = ["P", "Q", "V"]
 
-	ret = dict()
+	flags_ret = dict()
+	stats_ret = dict()
 
 	for flag in flags:
 		for i, arg in enumerate(sys.argv):
 			if arg == flag or arg == "-" + flag or arg == "--" + flag:
 				try:
 					val = sys.argv[i + 1]
-					ret[flag] = val
+					flags_ret[flag] = val
 				except IndexError:
 					pass
 
-	return ret
+	for stat in stats:
+		for arg in sys.argv:
+			if arg.upper() == stat or arg.upper() == "-" + stat or arg.upper() == "--" + stat:
+				stats_ret[stat] = True
+
+	return flags_ret, stats_ret
 
 
-def graph(nets, policies, values, title):
+def graph(nets, stats, fen, move):
 
 	fig, ax = plt.subplots()
-	ax.plot(nets, policies, color = "red", marker = "o")
+
+	desired_stats = sorted(list(stats[0]))		# Gets keys
+
+	values = [foo[desired_stats[0]] for foo in stats]
+
+	ax.plot(nets, values, color = "red", marker = "o")
 	ax.set_xlabel("network", fontsize = 14)
-	ax.set_ylabel("policy", color = "red", fontsize = 14)
+	ax.set_ylabel(f"{desired_stats[0]} ({move})", color = "red", fontsize = 14)
 
-	ax2 = ax.twinx()
-	ax2.plot(nets, values, color = "blue", marker = "o")
-	ax2.set_ylabel("value", color = "blue", fontsize = 14)
+	if len(desired_stats) > 1:
+		values = [foo[desired_stats[1]] for foo in stats]
+		ax2 = ax.twinx()
+		ax2.plot(nets, values, color = "blue", marker = "o")
+		ax2.set_ylabel(f"{desired_stats[1]} ({move})", color = "blue", fontsize = 14)
 
-	plt.title(title)
+	plt.title(fen)
 	plt.show()
 
 
@@ -153,22 +172,28 @@ def main():
 	except FileExistsError:
 		pass
 
-	flagdict = parse_flags()
+	flag_dict, stats_dict = parse_flags()
+
+	desired_stats = list(stats_dict)		# Gets keys
+
+	if len(desired_stats) < 1 or len(desired_stats) > 2:
+		print("Must specify 1 or 2 stats to track: -P -Q -V")
+		sys.exit()
 
 	try:
-		net = int(flagdict["start_net_id"])
-		modulo = int(flagdict["modulo"])
-		move = flagdict["move"]
-		fen = flagdict["fen"]
+		net = int(flag_dict["start_net_id"])
+		modulo = int(flag_dict["modulo"])
+		nodes = int(flag_dict["nodes"])
+		move = flag_dict["move"]
+		fen = flag_dict["fen"]
 	except KeyError:
-		print("Required args: start_net_id , modulo , move , fen")
+		print("Required args: start_net_id , modulo , move , nodes, fen")
 		sys.exit()
 
 	print()
 
 	nets = []
-	policies = []
-	values = []
+	stats = []		# Each item being a dict of stat --> value
 
 	engine = Engine(ENGINE)
 
@@ -185,18 +210,15 @@ def main():
 				print(f"(net {net} not known, ending run)")
 				break
 
-		policy, value = engine.test(fen, move, net)
+		new_stats = engine.test(fen, move, net, nodes, desired_stats)
 
 		nets.append(net)
-		policies.append(policy)
-		values.append(value)
-
-		print(f"P = {policy} V = {value}")
+		stats.append(new_stats)
 
 		net += modulo
 
 	engine.quit()
-	graph(nets, policies, values, f"P({move}) and V for:  {fen}")
+	graph(nets, stats, fen, move)
 
 
 if __name__ == "__main__":
